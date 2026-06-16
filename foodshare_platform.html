@@ -1,0 +1,1249 @@
+
+<h2 class="sr-only">FoodShare - Smart Food Waste Management Platform with Admin, Donor, and User modules</h2>
+
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --green: #22C55E; --green-dark: #16A34A; --green-light: #DCFCE7; --green-muted: #86EFAC;
+    --amber: #F59E0B; --amber-light: #FEF3C7;
+    --red: #EF4444; --red-light: #FEE2E2;
+    --blue: #3B82F6; --blue-light: #EFF6FF;
+    --bg: #F8FAFC; --card: #FFFFFF;
+    --text: #0F172A; --text-2: #475569; --text-3: #94A3B8;
+    --border: rgba(0,0,0,0.08); --border-2: rgba(0,0,0,0.12);
+    --sidebar-w: 220px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0F172A; --card: #1E293B;
+      --text: #F1F5F9; --text-2: #94A3B8; --text-3: #475569;
+      --border: rgba(255,255,255,0.08); --border-2: rgba(255,255,255,0.12);
+      --green-light: #14532D; --amber-light: #451A03; --red-light: #450A0A; --blue-light: #1E3A5F;
+    }
+  }
+  body { font-family: var(--font-sans, -apple-system, system-ui); background: var(--bg); color: var(--text); }
+
+  .app { display: flex; min-height: 100vh; }
+
+  /* Sidebar */
+  .sidebar { width: var(--sidebar-w); background: var(--card); border-right: 0.5px solid var(--border-2); display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; flex-shrink: 0; }
+  .logo { padding: 20px 16px 16px; border-bottom: 0.5px solid var(--border); }
+  .logo-mark { display: flex; align-items: center; gap: 8px; }
+  .logo-icon { width: 32px; height: 32px; background: var(--green); border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+  .logo-icon svg { width: 18px; height: 18px; fill: white; }
+  .logo-name { font-size: 15px; font-weight: 500; color: var(--text); }
+  .logo-sub { font-size: 10px; color: var(--text-3); margin-top: 1px; }
+
+  .role-switch { padding: 12px 16px; border-bottom: 0.5px solid var(--border); }
+  .role-tabs { display: flex; background: var(--bg); border-radius: 8px; padding: 2px; gap: 2px; }
+  .role-tab { flex: 1; text-align: center; padding: 5px 4px; font-size: 10px; border-radius: 6px; cursor: pointer; border: none; background: transparent; color: var(--text-2); transition: all 0.15s; font-weight: 400; }
+  .role-tab.active { background: var(--card); color: var(--green-dark); font-weight: 500; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+
+  .nav { flex: 1; padding: 8px 10px; overflow-y: auto; }
+  .nav-section { margin-bottom: 4px; }
+  .nav-label { font-size: 10px; color: var(--text-3); padding: 8px 6px 4px; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 500; }
+  .nav-item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 8px; cursor: pointer; font-size: 13px; color: var(--text-2); transition: all 0.12s; border: none; background: transparent; width: 100%; text-align: left; }
+  .nav-item:hover { background: var(--bg); color: var(--text); }
+  .nav-item.active { background: var(--green-light); color: var(--green-dark); font-weight: 500; }
+  .nav-item i { font-size: 16px; flex-shrink: 0; }
+  .nav-badge { margin-left: auto; font-size: 10px; background: var(--red); color: white; border-radius: 10px; padding: 2px 6px; font-weight: 500; }
+
+  /* Main */
+  .main { flex: 1; overflow: auto; }
+  .topbar { background: var(--card); border-bottom: 0.5px solid var(--border); padding: 0 24px; height: 56px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 10; }
+  .topbar-left { display: flex; align-items: center; gap: 12px; }
+  .page-title { font-size: 15px; font-weight: 500; }
+  .breadcrumb { font-size: 12px; color: var(--text-3); }
+  .topbar-right { display: flex; align-items: center; gap: 12px; }
+  .search-box { display: flex; align-items: center; gap: 8px; background: var(--bg); border: 0.5px solid var(--border-2); border-radius: 8px; padding: 6px 12px; font-size: 13px; color: var(--text-2); }
+  .search-box input { border: none; background: transparent; outline: none; font-size: 13px; color: var(--text); width: 160px; }
+  .avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--green); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 500; color: white; cursor: pointer; }
+  .notif-btn { position: relative; cursor: pointer; background: none; border: none; color: var(--text-2); }
+  .notif-dot { position: absolute; top: 0; right: 0; width: 7px; height: 7px; background: var(--red); border-radius: 50%; border: 1.5px solid var(--card); }
+
+  .content { padding: 24px; }
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* KPI Cards */
+  .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+  .kpi-card { background: var(--card); border: 0.5px solid var(--border); border-radius: 12px; padding: 16px 20px; }
+  .kpi-label { font-size: 12px; color: var(--text-3); margin-bottom: 8px; font-weight: 400; }
+  .kpi-value { font-size: 26px; font-weight: 500; line-height: 1; margin-bottom: 6px; }
+  .kpi-trend { font-size: 11px; display: flex; align-items: center; gap: 4px; }
+  .trend-up { color: #16A34A; }
+  .trend-down { color: var(--red); }
+  .kpi-icon { float: right; margin-top: -32px; width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+  .kpi-icon.green { background: var(--green-light); color: var(--green-dark); }
+  .kpi-icon.amber { background: var(--amber-light); color: #92400E; }
+  .kpi-icon.blue { background: var(--blue-light); color: #1D4ED8; }
+  .kpi-icon.red { background: var(--red-light); color: #991B1B; }
+
+  /* Grid 2 col */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+  .grid-3-1 { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; margin-bottom: 24px; }
+
+  /* Cards */
+  .card { background: var(--card); border: 0.5px solid var(--border); border-radius: 12px; }
+  .card-header { padding: 16px 20px; border-bottom: 0.5px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  .card-title { font-size: 14px; font-weight: 500; }
+  .card-body { padding: 16px 20px; }
+  .card-action { font-size: 12px; color: var(--green-dark); cursor: pointer; background: none; border: none; font-weight: 500; }
+
+  /* Table */
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { padding: 10px 12px; text-align: left; font-weight: 500; font-size: 11px; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.04em; border-bottom: 0.5px solid var(--border); background: var(--bg); }
+  td { padding: 12px; border-bottom: 0.5px solid var(--border); color: var(--text-2); vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--bg); }
+
+  /* Badges */
+  .badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 20px; font-size: 11px; font-weight: 500; }
+  .badge-green { background: var(--green-light); color: var(--green-dark); }
+  .badge-amber { background: var(--amber-light); color: #92400E; }
+  .badge-red { background: var(--red-light); color: #991B1B; }
+  .badge-blue { background: var(--blue-light); color: #1D4ED8; }
+  .badge-gray { background: var(--bg); color: var(--text-3); border: 0.5px solid var(--border-2); }
+
+  /* Buttons */
+  .btn { padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; border: 0.5px solid var(--border-2); background: transparent; color: var(--text); transition: all 0.12s; display: inline-flex; align-items: center; gap: 6px; }
+  .btn:hover { background: var(--bg); }
+  .btn-green { background: var(--green); color: white; border-color: var(--green); }
+  .btn-green:hover { background: var(--green-dark); border-color: var(--green-dark); }
+  .btn-sm { padding: 5px 10px; font-size: 11px; }
+  .btn-danger { background: var(--red-light); color: #991B1B; border-color: #FCA5A5; }
+
+  /* Hero Section */
+  .hero { background: linear-gradient(135deg, #052e16 0%, #14532D 50%, #166534 100%); color: white; border-radius: 16px; padding: 40px 48px; margin-bottom: 24px; position: relative; overflow: hidden; }
+  .hero::before { content: ''; position: absolute; top: -60px; right: -60px; width: 300px; height: 300px; background: rgba(34,197,94,0.15); border-radius: 50%; }
+  .hero::after { content: ''; position: absolute; bottom: -80px; right: 80px; width: 200px; height: 200px; background: rgba(245,158,11,0.1); border-radius: 50%; }
+  .hero-tag { display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.1); border: 0.5px solid rgba(255,255,255,0.2); border-radius: 20px; padding: 4px 12px; font-size: 12px; margin-bottom: 16px; }
+  .hero-dot { width: 6px; height: 6px; background: var(--green-muted); border-radius: 50%; }
+  .hero h1 { font-size: 36px; font-weight: 500; line-height: 1.2; margin-bottom: 12px; }
+  .hero h1 span { color: var(--green-muted); }
+  .hero p { font-size: 14px; opacity: 0.8; max-width: 480px; line-height: 1.6; margin-bottom: 24px; }
+  .hero-stats { display: flex; gap: 32px; }
+  .hero-stat { }
+  .hero-stat-val { font-size: 22px; font-weight: 500; }
+  .hero-stat-label { font-size: 11px; opacity: 0.6; margin-top: 2px; }
+  .hero-btns { display: flex; gap: 10px; margin-bottom: 28px; }
+  .hero-btn { padding: 10px 20px; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; border: none; transition: all 0.15s; display: inline-flex; align-items: center; gap: 6px; }
+  .hero-btn-primary { background: var(--green); color: white; }
+  .hero-btn-secondary { background: rgba(255,255,255,0.1); color: white; border: 0.5px solid rgba(255,255,255,0.2); }
+
+  /* Food Cards */
+  .food-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .food-card { background: var(--card); border: 0.5px solid var(--border); border-radius: 12px; overflow: hidden; transition: all 0.2s; cursor: pointer; }
+  .food-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
+  .food-img { height: 140px; display: flex; align-items: center; justify-content: center; font-size: 48px; position: relative; }
+  .food-img-green { background: linear-gradient(135deg, #DCFCE7, #BBF7D0); }
+  .food-img-amber { background: linear-gradient(135deg, #FEF3C7, #FDE68A); }
+  .food-img-blue { background: linear-gradient(135deg, #EFF6FF, #DBEAFE); }
+  .food-dist { position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.6); color: white; font-size: 11px; border-radius: 20px; padding: 3px 8px; backdrop-filter: blur(4px); }
+  .food-info { padding: 14px; }
+  .food-name { font-size: 13px; font-weight: 500; margin-bottom: 4px; }
+  .food-donor { font-size: 11px; color: var(--text-3); margin-bottom: 8px; display: flex; align-items: center; gap: 4px; }
+  .food-meta { display: flex; align-items: center; justify-content: space-between; }
+  .food-qty { font-size: 11px; color: var(--green-dark); background: var(--green-light); padding: 3px 8px; border-radius: 20px; font-weight: 500; }
+  .food-time { font-size: 11px; color: var(--text-3); display: flex; align-items: center; gap: 3px; }
+  .food-req-btn { width: 100%; margin-top: 10px; padding: 8px; text-align: center; background: var(--green); color: white; border: none; border-radius: 8px; font-size: 12px; font-weight: 500; cursor: pointer; transition: background 0.15s; }
+  .food-req-btn:hover { background: var(--green-dark); }
+
+  /* Form Styles */
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .form-group { margin-bottom: 16px; }
+  .form-label { display: block; font-size: 12px; font-weight: 500; color: var(--text-2); margin-bottom: 6px; }
+  .form-input { width: 100%; padding: 9px 12px; border: 0.5px solid var(--border-2); border-radius: 8px; font-size: 13px; background: var(--bg); color: var(--text); outline: none; transition: border 0.12s; }
+  .form-input:focus { border-color: var(--green); }
+  .form-select { width: 100%; padding: 9px 12px; border: 0.5px solid var(--border-2); border-radius: 8px; font-size: 13px; background: var(--bg); color: var(--text); outline: none; }
+  .form-textarea { width: 100%; padding: 9px 12px; border: 0.5px solid var(--border-2); border-radius: 8px; font-size: 13px; background: var(--bg); color: var(--text); outline: none; resize: vertical; min-height: 80px; font-family: inherit; }
+  .upload-area { border: 1.5px dashed var(--border-2); border-radius: 10px; padding: 24px; text-align: center; cursor: pointer; transition: all 0.15s; background: var(--bg); }
+  .upload-area:hover { border-color: var(--green); background: var(--green-light); }
+  .upload-icon { font-size: 28px; color: var(--text-3); margin-bottom: 8px; }
+  .upload-text { font-size: 12px; color: var(--text-2); }
+  .upload-text span { color: var(--green-dark); font-weight: 500; }
+
+  /* Progress bar */
+  .progress-bar { height: 6px; background: var(--bg); border-radius: 4px; overflow: hidden; }
+  .progress-fill { height: 100%; border-radius: 4px; transition: width 0.3s; }
+
+  /* Avatar row */
+  .avatar-row { display: flex; align-items: center; gap: 8px; }
+  .avatar-sm { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 500; color: white; flex-shrink: 0; }
+
+  /* Stat row */
+  .stat-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 0.5px solid var(--border); }
+  .stat-row:last-child { border-bottom: none; }
+  .stat-row-label { font-size: 13px; color: var(--text-2); }
+  .stat-row-val { font-size: 13px; font-weight: 500; }
+
+  /* Map placeholder */
+  .map-placeholder { background: linear-gradient(135deg, #ECFDF5, #D1FAE5); border-radius: 10px; height: 200px; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 8px; border: 0.5px solid #A7F3D0; }
+  .map-pin { font-size: 32px; }
+
+  /* Section header */
+  .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  .section-title { font-size: 16px; font-weight: 500; }
+  .section-sub { font-size: 12px; color: var(--text-3); margin-top: 2px; }
+
+  /* Timeline */
+  .timeline { }
+  .tl-item { display: flex; gap: 12px; padding: 8px 0; }
+  .tl-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; }
+  .tl-content { flex: 1; }
+  .tl-title { font-size: 13px; font-weight: 500; }
+  .tl-sub { font-size: 11px; color: var(--text-3); margin-top: 2px; }
+  .tl-time { font-size: 11px; color: var(--text-3); white-space: nowrap; }
+
+  /* Chip filter */
+  .chip-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+  .chip { padding: 6px 14px; border-radius: 20px; font-size: 12px; cursor: pointer; border: 0.5px solid var(--border-2); background: var(--card); color: var(--text-2); transition: all 0.12s; font-weight: 400; }
+  .chip.active, .chip:hover { background: var(--green); color: white; border-color: var(--green); }
+
+  /* Toast */
+  .toast { position: fixed; bottom: 20px; right: 20px; background: #0F172A; color: white; padding: 12px 18px; border-radius: 10px; font-size: 13px; display: none; align-items: center; gap: 8px; z-index: 100; animation: slideIn 0.2s ease; }
+  @keyframes slideIn { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  .toast.show { display: flex; }
+
+  /* Request tracker */
+  .tracker { display: flex; align-items: center; gap: 0; margin: 20px 0; }
+  .tracker-step { flex: 1; text-align: center; position: relative; }
+  .tracker-dot { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 6px; font-size: 12px; font-weight: 500; }
+  .tracker-dot.done { background: var(--green); color: white; }
+  .tracker-dot.current { background: var(--amber); color: white; }
+  .tracker-dot.pending { background: var(--bg); color: var(--text-3); border: 1.5px solid var(--border-2); }
+  .tracker-label { font-size: 10px; color: var(--text-3); }
+  .tracker-line { position: absolute; top: 14px; left: 50%; width: 100%; height: 1.5px; background: var(--border-2); z-index: -1; }
+  .tracker-line.done { background: var(--green); }
+
+  /* Notification */
+  .notif-item { display: flex; gap: 10px; padding: 12px 0; border-bottom: 0.5px solid var(--border); }
+  .notif-item:last-child { border-bottom: none; }
+  .notif-icon { width: 36px; height: 36px; border-radius: 10px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+  .notif-text { flex: 1; }
+  .notif-title { font-size: 13px; font-weight: 500; }
+  .notif-desc { font-size: 11px; color: var(--text-2); margin-top: 2px; }
+  .notif-time { font-size: 11px; color: var(--text-3); white-space: nowrap; }
+
+  /* Donor card */
+  .donor-card { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 0.5px solid var(--border); }
+  .donor-card:last-child { border-bottom: none; }
+  .donor-info { flex: 1; }
+  .donor-name { font-size: 13px; font-weight: 500; }
+  .donor-type { font-size: 11px; color: var(--text-3); }
+  .star-row { display: flex; align-items: center; gap: 2px; color: var(--amber); font-size: 12px; }
+
+  /* Impact ring */
+  .impact-section { display: flex; align-items: center; gap: 24px; }
+  .impact-donut { position: relative; width: 110px; height: 110px; flex-shrink: 0; }
+  .impact-donut canvas { width: 110px !important; height: 110px !important; }
+  .impact-donut-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); text-align: center; }
+  .impact-donut-val { font-size: 18px; font-weight: 500; }
+  .impact-donut-label { font-size: 9px; color: var(--text-3); }
+  .impact-legend { flex: 1; }
+
+  /* Floating action bar */
+  .fab { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: var(--card); border: 0.5px solid var(--border-2); border-radius: 20px; padding: 6px; display: flex; gap: 4px; box-shadow: 0 4px 20px rgba(0,0,0,0.12); z-index: 50; }
+  .fab-btn { padding: 8px 14px; border-radius: 16px; font-size: 12px; cursor: pointer; border: none; background: transparent; color: var(--text-2); display: flex; align-items: center; gap: 6px; transition: all 0.12s; font-weight: 400; }
+  .fab-btn.active { background: var(--green); color: white; font-weight: 500; }
+  .fab-btn:hover:not(.active) { background: var(--bg); }
+
+  /* Empty state */
+  .empty-state { text-align: center; padding: 48px 24px; }
+  .empty-icon { font-size: 40px; margin-bottom: 12px; color: var(--text-3); }
+  .empty-title { font-size: 15px; font-weight: 500; margin-bottom: 6px; }
+  .empty-sub { font-size: 13px; color: var(--text-3); }
+</style>
+
+<div class="app">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="logo">
+      <div class="logo-mark">
+        <div class="logo-icon">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C8.13 2 5 5.13 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26c1.81-1.27 3-3.36 3-5.74 0-3.87-3.13-7-7-7z"/><path d="M9 21c0 .55.45 1 1 1h4c.55 0 1-.45 1-1v-1H9v1z"/></svg>
+        </div>
+        <div>
+          <div class="logo-name">FoodShare</div>
+          <div class="logo-sub">Smart Waste Management</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="role-switch">
+      <div class="role-tabs">
+        <button class="role-tab active" onclick="switchRole('admin', this)">Admin</button>
+        <button class="role-tab" onclick="switchRole('donor', this)">Donor</button>
+        <button class="role-tab" onclick="switchRole('user', this)">User</button>
+      </div>
+    </div>
+
+    <nav class="nav" id="nav"></nav>
+  </aside>
+
+  <!-- Main content -->
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar-left">
+        <div>
+          <div class="page-title" id="page-title">Dashboard</div>
+          <div class="breadcrumb" id="breadcrumb">FoodShare / Admin / Overview</div>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <div class="search-box">
+          <i class="ti ti-search" aria-hidden="true" style="color:var(--text-3);font-size:14px;"></i>
+          <input placeholder="Search anything..." aria-label="Search" />
+        </div>
+        <button class="notif-btn" onclick="showToast('3 new donation requests received!', '🔔')" aria-label="Notifications">
+          <i class="ti ti-bell" style="font-size:20px;"></i>
+          <span class="notif-dot"></span>
+        </button>
+        <div class="avatar" title="Admin User">AD</div>
+      </div>
+    </header>
+
+    <div class="content" id="content-area"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast">
+  <span id="toast-icon">✅</span>
+  <span id="toast-msg"></span>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+const NAV = {
+  admin: [
+    { section: 'Overview', items: [
+      { id: 'admin-dashboard', icon: 'ti-layout-dashboard', label: 'Dashboard' },
+      { id: 'admin-reports', icon: 'ti-chart-bar', label: 'Analytics & Reports' },
+    ]},
+    { section: 'Manage', items: [
+      { id: 'admin-states', icon: 'ti-map', label: 'States & Cities' },
+      { id: 'admin-donors', icon: 'ti-users', label: 'Donor Management' },
+      { id: 'admin-food', icon: 'ti-package', label: 'Food Listings', badge: '12' },
+      { id: 'admin-requests', icon: 'ti-clipboard-list', label: 'Requests', badge: '5' },
+    ]},
+    { section: 'System', items: [
+      { id: 'admin-settings', icon: 'ti-settings', label: 'Settings' },
+    ]},
+  ],
+  donor: [
+    { section: 'Overview', items: [
+      { id: 'donor-dashboard', icon: 'ti-layout-dashboard', label: 'Dashboard' },
+    ]},
+    { section: 'Listings', items: [
+      { id: 'donor-add', icon: 'ti-plus', label: 'Add Food Listing' },
+      { id: 'donor-manage', icon: 'ti-list', label: 'Manage Listings' },
+      { id: 'donor-requests', icon: 'ti-clipboard-check', label: 'Incoming Requests', badge: '3' },
+    ]},
+    { section: 'Account', items: [
+      { id: 'donor-profile', icon: 'ti-user', label: 'Profile' },
+    ]},
+  ],
+  user: [
+    { section: 'Discover', items: [
+      { id: 'user-home', icon: 'ti-home', label: 'Home' },
+      { id: 'user-browse', icon: 'ti-search', label: 'Browse Food' },
+    ]},
+    { section: 'My Activity', items: [
+      { id: 'user-requests', icon: 'ti-clipboard-list', label: 'My Requests' },
+      { id: 'user-history', icon: 'ti-history', label: 'History' },
+    ]},
+    { section: 'Info', items: [
+      { id: 'user-about', icon: 'ti-info-circle', label: 'About & Mission' },
+      { id: 'user-contact', icon: 'ti-mail', label: 'Contact' },
+    ]},
+  ]
+};
+
+const PAGES = {};
+let currentRole = 'admin';
+let currentPage = 'admin-dashboard';
+let chartInstances = {};
+
+function destroyChart(id) {
+  if (chartInstances[id]) { chartInstances[id].destroy(); delete chartInstances[id]; }
+}
+
+function showToast(msg, icon='✅') {
+  const t = document.getElementById('toast');
+  document.getElementById('toast-msg').textContent = msg;
+  document.getElementById('toast-icon').textContent = icon;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+function switchRole(role, btn) {
+  document.querySelectorAll('.role-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  currentRole = role;
+  buildNav(role);
+  const firstPage = NAV[role][0].items[0].id;
+  navigate(firstPage);
+}
+
+function buildNav(role) {
+  const nav = document.getElementById('nav');
+  nav.innerHTML = '';
+  NAV[role].forEach(sec => {
+    const s = document.createElement('div');
+    s.className = 'nav-section';
+    s.innerHTML = `<div class="nav-label">${sec.section}</div>`;
+    sec.items.forEach(item => {
+      const btn = document.createElement('button');
+      btn.className = 'nav-item' + (item.id === currentPage ? ' active' : '');
+      btn.id = 'nav-' + item.id;
+      btn.onclick = () => navigate(item.id);
+      btn.innerHTML = `<i class="ti ${item.icon}" aria-hidden="true"></i><span>${item.label}</span>${item.badge ? `<span class="nav-badge">${item.badge}</span>` : ''}`;
+      s.appendChild(btn);
+    });
+    nav.appendChild(s);
+  });
+}
+
+function navigate(pageId) {
+  Object.keys(chartInstances).forEach(k => destroyChart(k));
+  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+  const nb = document.getElementById('nav-' + pageId);
+  if (nb) nb.classList.add('active');
+  currentPage = pageId;
+  const label = pageId.split('-').slice(1).map(w => w[0].toUpperCase() + w.slice(1)).join(' ');
+  document.getElementById('page-title').textContent = label;
+  document.getElementById('breadcrumb').textContent = `FoodShare / ${currentRole[0].toUpperCase()+currentRole.slice(1)} / ${label}`;
+  renderPage(pageId);
+}
+
+function renderPage(id) {
+  const area = document.getElementById('content-area');
+  area.innerHTML = '';
+  const renderer = PAGES[id];
+  if (renderer) renderer(area);
+  else { area.innerHTML = `<div class="empty-state"><div class="empty-icon"><i class="ti ti-tool"></i></div><div class="empty-title">Coming soon</div><div class="empty-sub">This module is under development</div></div>`; }
+}
+
+/* ---- ADMIN DASHBOARD ---- */
+PAGES['admin-dashboard'] = (el) => {
+  el.innerHTML = `
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-label">Total Donors</div>
+      <div class="kpi-value" style="color:var(--green-dark)">2,847</div>
+      <div class="kpi-trend trend-up"><i class="ti ti-trending-up" style="font-size:13px"></i> +18% this month</div>
+      <div class="kpi-icon green"><i class="ti ti-users" style="font-size:20px"></i></div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Food Listed</div>
+      <div class="kpi-value" style="color:var(--amber)">1,423</div>
+      <div class="kpi-trend trend-up"><i class="ti ti-trending-up" style="font-size:13px"></i> +12% this week</div>
+      <div class="kpi-icon amber"><i class="ti ti-package" style="font-size:20px"></i></div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Total Requests</div>
+      <div class="kpi-value" style="color:var(--blue)">5,291</div>
+      <div class="kpi-trend trend-up"><i class="ti ti-trending-up" style="font-size:13px"></i> +24% overall</div>
+      <div class="kpi-icon blue"><i class="ti ti-clipboard-list" style="font-size:20px"></i></div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Meals Saved</div>
+      <div class="kpi-value" style="color:var(--red)">89.4K</div>
+      <div class="kpi-trend trend-up"><i class="ti ti-trending-up" style="font-size:13px"></i> Impact score 9.6</div>
+      <div class="kpi-icon red"><i class="ti ti-heart" style="font-size:20px"></i></div>
+    </div>
+  </div>
+
+  <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:24px;">
+    <div class="kpi-card" style="border-top:3px solid var(--green)">
+      <div class="kpi-label">Completed</div>
+      <div class="kpi-value" style="font-size:20px;color:var(--green-dark)">4,217</div>
+      <div style="margin-top:8px"><div class="progress-bar"><div class="progress-fill" style="width:79%;background:var(--green)"></div></div></div>
+      <div style="font-size:11px;color:var(--text-3);margin-top:4px">79% completion rate</div>
+    </div>
+    <div class="kpi-card" style="border-top:3px solid var(--amber)">
+      <div class="kpi-label">Pending</div>
+      <div class="kpi-value" style="font-size:20px;color:#92400E">628</div>
+      <div style="margin-top:8px"><div class="progress-bar"><div class="progress-fill" style="width:12%;background:var(--amber)"></div></div></div>
+      <div style="font-size:11px;color:var(--text-3);margin-top:4px">12% awaiting action</div>
+    </div>
+    <div class="kpi-card" style="border-top:3px solid var(--red)">
+      <div class="kpi-label">Rejected</div>
+      <div class="kpi-value" style="font-size:20px;color:#991B1B">446</div>
+      <div style="margin-top:8px"><div class="progress-bar"><div class="progress-fill" style="width:9%;background:var(--red)"></div></div></div>
+      <div style="font-size:11px;color:var(--text-3);margin-top:4px">9% rejection rate</div>
+    </div>
+    <div class="kpi-card" style="border-top:3px solid var(--blue)">
+      <div class="kpi-label">New Today</div>
+      <div class="kpi-value" style="font-size:20px;color:#1D4ED8">47</div>
+      <div style="margin-top:8px"><div class="progress-bar"><div class="progress-fill" style="width:65%;background:var(--blue)"></div></div></div>
+      <div style="font-size:11px;color:var(--text-3);margin-top:4px">Above daily average</div>
+    </div>
+  </div>
+
+  <div class="grid-3-1">
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Donation Activity</div>
+          <div style="font-size:11px;color:var(--text-3)">Monthly trend — last 6 months</div>
+        </div>
+        <select class="form-select" style="width:auto;padding:5px 10px;font-size:11px;">
+          <option>Last 6 months</option>
+          <option>Last year</option>
+        </select>
+      </div>
+      <div class="card-body">
+        <div style="position:relative;height:220px;"><canvas id="lineChart" role="img" aria-label="Monthly donations over 6 months">Line chart showing donation activity from Jan to Jun.</canvas></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">Category Breakdown</div></div>
+      <div class="card-body">
+        <div style="position:relative;height:160px;margin-bottom:12px;"><canvas id="pieChart" role="img" aria-label="Food category breakdown pie chart">Pie chart of food categories.</canvas></div>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;font-size:12px;"><span style="display:flex;align-items:center;gap:6px;"><span style="width:8px;height:8px;border-radius:2px;background:#22C55E;display:inline-block;"></span>Cooked Meals</span><span style="font-weight:500">38%</span></div>
+          <div style="display:flex;align-items:center;justify-content:space-between;font-size:12px;"><span style="display:flex;align-items:center;gap:6px;"><span style="width:8px;height:8px;border-radius:2px;background:#3B82F6;display:inline-block;"></span>Vegetables</span><span style="font-weight:500">24%</span></div>
+          <div style="display:flex;align-items:center;justify-content:space-between;font-size:12px;"><span style="display:flex;align-items:center;gap:6px;"><span style="width:8px;height:8px;border-radius:2px;background:#F59E0B;display:inline-block;"></span>Bakery Items</span><span style="font-weight:500">21%</span></div>
+          <div style="display:flex;align-items:center;justify-content:space-between;font-size:12px;"><span style="display:flex;align-items:center;gap:6px;"><span style="width:8px;height:8px;border-radius:2px;background:#EF4444;display:inline-block;"></span>Dairy & More</span><span style="font-weight:500">17%</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Recent Requests</div>
+        <button class="card-action" onclick="navigate('admin-requests')">View all</button>
+      </div>
+      <div class="card-body" style="padding:0">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>ID</th><th>User</th><th>Food</th><th>Status</th><th>Action</th></tr></thead>
+            <tbody>
+              ${[
+                ['#R-1042','Ravi Kumar','Biryani (5kg)','pending'],
+                ['#R-1041','Priya Nair','Veg Meals (20)','approved'],
+                ['#R-1040','NGO Hope','Bread Loaves (30)','completed'],
+                ['#R-1039','Ahmed Khan','Rice & Dal','rejected'],
+                ['#R-1038','Sunita Devi','Sweets (2kg)','completed'],
+              ].map(([id,u,f,s]) => `<tr>
+                <td style="font-weight:500;color:var(--text)">${id}</td>
+                <td><div class="avatar-row"><div class="avatar-sm" style="background:${s==='approved'?'var(--green)':s==='rejected'?'var(--red)':'var(--amber)'};">${u[0]}</div>${u}</div></td>
+                <td>${f}</td>
+                <td><span class="badge badge-${s==='completed'?'green':s==='approved'?'blue':s==='rejected'?'red':'amber'}">${s}</span></td>
+                <td><button class="btn btn-sm" onclick="showToast('Status updated for ${id}')">Update</button></td>
+              </tr>`).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Activity Feed</div>
+        <span class="badge badge-green" style="font-size:10px;">Live</span>
+      </div>
+      <div class="card-body">
+        ${[
+          {icon:'ti-circle-check',bg:'var(--green-light)',c:'var(--green-dark)',title:'Request #R-1042 approved',sub:'Admin approved Ravi Kumar\'s request',t:'2m ago'},
+          {icon:'ti-package',bg:'var(--blue-light)',c:'var(--blue)',title:'New food listed',sub:'Fresh Biryani (10 portions) by Hotel Taj',t:'15m ago'},
+          {icon:'ti-user-plus',bg:'var(--amber-light)',c:'var(--amber)',title:'New donor registered',sub:'Green Valley Restaurant joined',t:'32m ago'},
+          {icon:'ti-truck-delivery',bg:'var(--green-light)',c:'var(--green-dark)',title:'Pickup completed',sub:'NGO Hope collected 20 meals',t:'1h ago'},
+          {icon:'ti-alert-triangle',bg:'var(--red-light)',c:'var(--red)',title:'Listing expired',sub:'Roti (50 pcs) marked expired',t:'2h ago'},
+        ].map(n => `
+          <div class="notif-item">
+            <div class="notif-icon" style="background:${n.bg};color:${n.c}"><i class="ti ${n.icon}" style="font-size:16px;"></i></div>
+            <div class="notif-text"><div class="notif-title">${n.title}</div><div class="notif-desc">${n.sub}</div></div>
+            <div class="notif-time">${n.t}</div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  </div>`;
+
+  setTimeout(() => {
+    destroyChart('lineChart');
+    chartInstances['lineChart'] = new Chart(document.getElementById('lineChart'), {
+      type: 'line',
+      data: {
+        labels: ['Jan','Feb','Mar','Apr','May','Jun'],
+        datasets: [
+          {label:'Donations',data:[420,580,490,720,650,890],borderColor:'#22C55E',backgroundColor:'rgba(34,197,94,0.08)',fill:true,tension:0.4,pointBackgroundColor:'#22C55E',pointRadius:4,borderDash:[]},
+          {label:'Requests',data:[380,520,470,680,610,840],borderColor:'#3B82F6',backgroundColor:'transparent',tension:0.4,pointBackgroundColor:'#3B82F6',pointRadius:4,borderDash:[5,3]},
+        ]
+      },
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{grid:{color:'rgba(0,0,0,0.05)'}}}}
+    });
+    destroyChart('pieChart');
+    chartInstances['pieChart'] = new Chart(document.getElementById('pieChart'), {
+      type: 'doughnut',
+      data: {labels:['Cooked','Vegetables','Bakery','Dairy'],datasets:[{data:[38,24,21,17],backgroundColor:['#22C55E','#3B82F6','#F59E0B','#EF4444'],borderWidth:0,hoverOffset:4}]},
+      options:{responsive:true,maintainAspectRatio:false,cutout:'70%',plugins:{legend:{display:false}}}
+    });
+  }, 100);
+};
+
+/* ---- ADMIN REPORTS ---- */
+PAGES['admin-reports'] = (el) => {
+  el.innerHTML = `
+  <div class="kpi-grid" style="margin-bottom:24px;">
+    <div class="kpi-card"><div class="kpi-label">Waste Reduced</div><div class="kpi-value" style="color:var(--green-dark)">12.4T</div><div class="kpi-trend trend-up"><i class="ti ti-trending-up" style="font-size:12px"></i> This quarter</div></div>
+    <div class="kpi-card"><div class="kpi-label">CO₂ Saved</div><div class="kpi-value" style="color:var(--blue)">8.9T</div><div class="kpi-trend trend-up"><i class="ti ti-trending-up" style="font-size:12px"></i> Equivalent</div></div>
+    <div class="kpi-card"><div class="kpi-label">People Fed</div><div class="kpi-value" style="color:var(--amber)">47.2K</div><div class="kpi-trend trend-up"><i class="ti ti-trending-up" style="font-size:12px"></i> Total beneficiaries</div></div>
+    <div class="kpi-card"><div class="kpi-label">Avg Daily Meals</div><div class="kpi-value" style="color:var(--red)">284</div><div class="kpi-trend trend-up"><i class="ti ti-trending-up" style="font-size:12px"></i> +8% vs last month</div></div>
+  </div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-header"><div class="card-title">Monthly Donations Saved (kg)</div></div>
+      <div class="card-body">
+        <div style="position:relative;height:240px;"><canvas id="barChart" role="img" aria-label="Bar chart showing monthly food saved in kilograms">Monthly food donations saved.</canvas></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">Donor Type Breakdown</div></div>
+      <div class="card-body">
+        <div style="position:relative;height:240px;"><canvas id="doughnutChart2" role="img" aria-label="Donut chart of donor types">Donor types: Restaurants, Hotels, Functions, Households.</canvas></div>
+      </div>
+    </div>
+  </div>
+  <div class="card" style="margin-top:16px;">
+    <div class="card-header">
+      <div class="card-title">Export Reports</div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-green btn-sm" onclick="showToast('PDF report downloading...','📄')"><i class="ti ti-file-type-pdf" style="font-size:13px"></i> PDF</button>
+        <button class="btn btn-sm" onclick="showToast('Excel report downloading...','📊')"><i class="ti ti-file-spreadsheet" style="font-size:13px"></i> Excel</button>
+      </div>
+    </div>
+    <div class="card-body" style="padding:0">
+      <table><thead><tr><th>Report Type</th><th>Period</th><th>Records</th><th>Status</th><th>Download</th></tr></thead>
+      <tbody>
+        ${[['Monthly Donations','June 2025','1,284','Ready'],['Donor Activity','Q2 2025','847','Ready'],['Waste Reduction','2025 YTD','5,291','Ready'],['NGO Impact','June 2025','23 NGOs','Ready']].map(([t,p,r,s]) => `
+        <tr><td style="font-weight:500;color:var(--text)">${t}</td><td>${p}</td><td>${r}</td><td><span class="badge badge-green">${s}</span></td>
+        <td><button class="btn btn-sm" onclick="showToast('${t} downloaded!')"><i class="ti ti-download" style="font-size:12px"></i></button></td></tr>`).join('')}
+      </tbody></table>
+    </div>
+  </div>`;
+
+  setTimeout(() => {
+    destroyChart('barChart');
+    chartInstances['barChart'] = new Chart(document.getElementById('barChart'), {
+      type:'bar',
+      data:{labels:['Jan','Feb','Mar','Apr','May','Jun'],datasets:[{label:'Food Saved (kg)',data:[1200,1580,1340,1920,1650,2100],backgroundColor:'rgba(34,197,94,0.7)',borderColor:'#22C55E',borderWidth:1,borderRadius:4}]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{grid:{color:'rgba(0,0,0,0.05)'}}}}
+    });
+    destroyChart('doughnutChart2');
+    chartInstances['doughnutChart2'] = new Chart(document.getElementById('doughnutChart2'), {
+      type:'doughnut',
+      data:{labels:['Restaurants','Hotels','Functions','Households'],datasets:[{data:[42,28,18,12],backgroundColor:['#22C55E','#3B82F6','#F59E0B','#8B5CF6'],borderWidth:0}]},
+      options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{position:'bottom',labels:{boxWidth:12,font:{size:12}}}}}
+    });
+  }, 100);
+};
+
+/* ---- ADMIN STATES ---- */
+PAGES['admin-states'] = (el) => {
+  el.innerHTML = `
+  <div class="grid-2" style="margin-bottom:24px;">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">State Management</div>
+        <button class="btn btn-green btn-sm" onclick="showToast('New state form opened')"><i class="ti ti-plus" style="font-size:12px"></i> Add State</button>
+      </div>
+      <div style="padding:12px 20px 0;"><div class="search-box" style="margin-bottom:12px;"><i class="ti ti-search" style="font-size:13px;color:var(--text-3)"></i><input placeholder="Search states..." style="border:none;background:transparent;outline:none;font-size:13px;width:100%;color:var(--text)"></div></div>
+      <div class="card-body" style="padding:0">
+        <table><thead><tr><th>#</th><th>State</th><th>Cities</th><th>Donors</th><th>Action</th></tr></thead>
+        <tbody>
+          ${[['Andhra Pradesh','14','284'],['Telangana','10','198'],['Karnataka','12','421'],['Tamil Nadu','9','312'],['Maharashtra','22','687'],['Delhi','8','524']].map(([s,c,d],i) => `
+          <tr><td style="color:var(--text-3)">${i+1}</td><td style="font-weight:500;color:var(--text)">${s}</td><td>${c}</td><td>${d}</td>
+          <td><div style="display:flex;gap:4px;">
+            <button class="btn btn-sm" onclick="showToast('Editing ${s}')"><i class="ti ti-edit" style="font-size:12px"></i></button>
+            <button class="btn btn-sm btn-danger" onclick="showToast('${s} deleted','🗑️')"><i class="ti ti-trash" style="font-size:12px"></i></button>
+          </div></td></tr>`).join('')}
+        </tbody></table>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">City Management</div>
+        <button class="btn btn-green btn-sm" onclick="showToast('New city form opened')"><i class="ti ti-plus" style="font-size:12px"></i> Add City</button>
+      </div>
+      <div style="padding:12px 20px 0;"><select class="form-select" style="margin-bottom:12px;"><option>Select State</option><option selected>Andhra Pradesh</option><option>Telangana</option></select></div>
+      <div class="card-body" style="padding:0">
+        <table><thead><tr><th>#</th><th>City</th><th>Donors</th><th>Active</th><th>Action</th></tr></thead>
+        <tbody>
+          ${[['Vijayawada','48','Yes'],['Visakhapatnam','62','Yes'],['Guntur','31','Yes'],['Tirupati','27','Yes'],['Nellore','19','Yes']].map(([c,d,a],i) => `
+          <tr><td style="color:var(--text-3)">${i+1}</td><td style="font-weight:500;color:var(--text)">${c}</td><td>${d}</td>
+          <td><span class="badge badge-green">${a}</span></td>
+          <td><div style="display:flex;gap:4px;">
+            <button class="btn btn-sm" onclick="showToast('Editing ${c}')"><i class="ti ti-edit" style="font-size:12px"></i></button>
+            <button class="btn btn-sm btn-danger" onclick="showToast('${c} deleted','🗑️')"><i class="ti ti-trash" style="font-size:12px"></i></button>
+          </div></td></tr>`).join('')}
+        </tbody></table>
+      </div>
+    </div>
+  </div>`;
+};
+
+/* ---- ADMIN DONORS ---- */
+PAGES['admin-donors'] = (el) => {
+  el.innerHTML = `
+  <div class="card">
+    <div class="card-header">
+      <div>
+        <div class="card-title">Donor Management</div>
+        <div style="font-size:11px;color:var(--text-3)">2,847 registered donors</div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <div class="chip-row" style="margin:0;">
+          <button class="chip active" onclick="filterDonors(this,'all')">All</button>
+          <button class="chip" onclick="filterDonors(this,'approved')">Approved</button>
+          <button class="chip" onclick="filterDonors(this,'pending')">Pending</button>
+          <button class="chip" onclick="filterDonors(this,'blocked')">Blocked</button>
+        </div>
+      </div>
+    </div>
+    <div class="card-body" style="padding:0">
+      <table><thead><tr><th>Donor</th><th>Type</th><th>City</th><th>Listed</th><th>Rating</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody>
+        ${[
+          ['Hotel Grand Palace','Hotel','Vijayawada','48','4.8','approved'],
+          ['Ravi\'s Restaurant','Restaurant','Guntur','32','4.6','approved'],
+          ['Function Hall XYZ','Function Hall','Visakhapatnam','21','4.5','pending'],
+          ['Sunita Home Kitchen','Household','Nellore','8','4.9','approved'],
+          ['Spice Garden','Restaurant','Tirupati','15','4.2','blocked'],
+          ['Cafe Sunrise','Restaurant','Vijayawada','27','4.7','approved'],
+        ].map(([name,type,city,listed,rating,status]) => `<tr>
+          <td><div class="avatar-row"><div class="avatar-sm" style="background:${status==='approved'?'var(--green)':status==='blocked'?'var(--red)':'var(--amber)'};">${name[0]}</div><div><div style="font-weight:500;color:var(--text);font-size:13px">${name}</div></div></div></td>
+          <td><span class="badge badge-gray">${type}</span></td>
+          <td>${city}</td><td>${listed}</td>
+          <td><div class="star-row"><i class="ti ti-star-filled" style="font-size:12px;color:var(--amber)"></i><span style="font-size:12px;font-weight:500"> ${rating}</span></div></td>
+          <td><span class="badge badge-${status==='approved'?'green':status==='blocked'?'red':'amber'}">${status}</span></td>
+          <td><div style="display:flex;gap:4px;">
+            <button class="btn btn-sm" onclick="showToast('${name} approved ✅','✅')">Approve</button>
+            <button class="btn btn-sm btn-danger" onclick="showToast('${name} blocked 🚫','🚫')">Block</button>
+          </div></td>
+        </tr>`).join('')}
+      </tbody></table>
+    </div>
+  </div>`;
+};
+function filterDonors(btn, f) {
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  showToast(`Showing ${f} donors`);
+}
+
+/* ---- ADMIN FOOD ---- */
+PAGES['admin-food'] = (el) => {
+  el.innerHTML = `
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">Food Listings</div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-sm" onclick="showToast('Expired listings removed','🗑️')"><i class="ti ti-trash" style="font-size:12px"></i> Remove Expired</button>
+        <button class="btn btn-green btn-sm" onclick="showToast('Export started','📊')"><i class="ti ti-download" style="font-size:12px"></i> Export</button>
+      </div>
+    </div>
+    <div class="card-body" style="padding:0">
+      <table><thead><tr><th>ID</th><th>Food</th><th>Donor</th><th>Qty</th><th>Category</th><th>Expires</th><th>Status</th><th>Action</th></tr></thead>
+      <tbody>
+        ${[
+          ['F-201','Chicken Biryani','Hotel Grand Palace','10 kg','Cooked Meals','2h','active'],
+          ['F-202','Bread Loaves','Bakery Fresh','30 pcs','Bakery','5h','active'],
+          ['F-203','Mixed Vegetables','Sunita Kitchen','5 kg','Vegetables','1h','expiring'],
+          ['F-204','Idli & Sambar','Ravi Restaurant','40 pcs','Cooked Meals','3h','active'],
+          ['F-205','Sweets (Ladoo)','Function Hall XYZ','2 kg','Sweets','4h','active'],
+          ['F-206','Rice Packets','Cafe Sunrise','25 pcs','Cooked Meals','30m','expiring'],
+        ].map(([id,food,donor,qty,cat,exp,status]) => `<tr>
+          <td style="font-weight:500;color:var(--text)">${id}</td>
+          <td>${food}</td><td style="color:var(--text-2)">${donor}</td><td>${qty}</td>
+          <td><span class="badge badge-gray">${cat}</span></td>
+          <td style="color:${status==='expiring'?'var(--red)':'var(--text-2)'}">⏱ ${exp}</td>
+          <td><span class="badge badge-${status==='active'?'green':'red'}">${status}</span></td>
+          <td><button class="btn btn-sm btn-danger" onclick="showToast('${id} deleted','🗑️')"><i class="ti ti-trash" style="font-size:12px"></i></button></td>
+        </tr>`).join('')}
+      </tbody></table>
+    </div>
+  </div>`;
+};
+
+/* ---- ADMIN REQUESTS ---- */
+PAGES['admin-requests'] = (el) => {
+  el.innerHTML = `
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">All Requests</div>
+      <div class="chip-row" style="margin:0;gap:6px;">
+        <button class="chip active" onclick="this.parentNode.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));this.classList.add('active');showToast('Showing all')">All</button>
+        <button class="chip" onclick="this.parentNode.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));this.classList.add('active');showToast('Pending requests')">Pending</button>
+        <button class="chip" onclick="this.parentNode.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));this.classList.add('active');showToast('Completed')">Completed</button>
+      </div>
+    </div>
+    <div class="card-body" style="padding:0">
+      <table><thead><tr><th>Request ID</th><th>Requester</th><th>Food Item</th><th>Donor</th><th>Date</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody>
+        ${[
+          ['#R-1042','Ravi Kumar','Biryani (5kg)','Hotel Grand','Today 2:30 PM','pending'],
+          ['#R-1041','Priya Nair','Veg Meals (20)','Ravi Restaurant','Today 1:15 PM','approved'],
+          ['#R-1040','NGO Hope','Bread (30 pcs)','Bakery Fresh','Today 11:00 AM','completed'],
+          ['#R-1039','Ahmed Khan','Rice & Dal','Cafe Sunrise','Yesterday','rejected'],
+          ['#R-1038','Sunita Devi','Sweets (2kg)','Function Hall','Yesterday','completed'],
+          ['#R-1037','NGO Annapoorna','Idli (40 pcs)','Hotel Grand','2 days ago','completed'],
+        ].map(([id,user,food,donor,date,status]) => `<tr>
+          <td style="font-weight:500;color:var(--text)">${id}</td>
+          <td>${user}</td><td>${food}</td><td style="color:var(--text-2)">${donor}</td><td style="color:var(--text-3);font-size:11px">${date}</td>
+          <td><span class="badge badge-${status==='completed'?'green':status==='approved'?'blue':status==='rejected'?'red':'amber'}">${status}</span></td>
+          <td><div style="display:flex;gap:4px;">
+            <button class="btn btn-sm" style="color:var(--green-dark);border-color:#A7F3D0;" onclick="showToast('${id} approved ✅','✅')"><i class="ti ti-check" style="font-size:12px"></i></button>
+            <button class="btn btn-sm btn-danger" onclick="showToast('${id} rejected','❌')"><i class="ti ti-x" style="font-size:12px"></i></button>
+            <button class="btn btn-sm" onclick="showToast('Marked complete')"><i class="ti ti-circle-check" style="font-size:12px"></i></button>
+          </div></td>
+        </tr>`).join('')}
+      </tbody></table>
+    </div>
+  </div>`;
+};
+
+/* ---- DONOR DASHBOARD ---- */
+PAGES['donor-dashboard'] = (el) => {
+  el.innerHTML = `
+  <div class="kpi-grid">
+    <div class="kpi-card"><div class="kpi-label">Foods Listed</div><div class="kpi-value" style="color:var(--green-dark)">48</div><div class="kpi-trend trend-up"><i class="ti ti-trending-up" style="font-size:12px"></i> 8 this week</div><div class="kpi-icon green"><i class="ti ti-package" style="font-size:20px"></i></div></div>
+    <div class="kpi-card"><div class="kpi-label">Total Requests</div><div class="kpi-value" style="color:var(--amber)">124</div><div class="kpi-trend trend-up"><i class="ti ti-trending-up" style="font-size:12px"></i> 3 pending</div><div class="kpi-icon amber"><i class="ti ti-clipboard-list" style="font-size:20px"></i></div></div>
+    <div class="kpi-card"><div class="kpi-label">Accepted</div><div class="kpi-value" style="color:var(--blue)">98</div><div class="kpi-trend trend-up"><i class="ti ti-trending-up" style="font-size:12px"></i> 79% rate</div><div class="kpi-icon blue"><i class="ti ti-circle-check" style="font-size:20px"></i></div></div>
+    <div class="kpi-card"><div class="kpi-label">Meals Donated</div><div class="kpi-value" style="color:var(--red)">1.2K</div><div class="kpi-trend trend-up"><i class="ti ti-trending-up" style="font-size:12px"></i> Community impact</div><div class="kpi-icon red"><i class="ti ti-heart" style="font-size:20px"></i></div></div>
+  </div>
+  <div class="grid-3-1">
+    <div class="card">
+      <div class="card-header"><div class="card-title">My Active Listings</div><button class="card-action btn-green btn btn-sm" onclick="navigate('donor-add')"><i class="ti ti-plus" style="font-size:12px"></i> Add Food</button></div>
+      <div class="card-body" style="padding:0">
+        <table><thead><tr><th>Food</th><th>Qty</th><th>Expires</th><th>Requests</th><th>Status</th><th>Action</th></tr></thead>
+        <tbody>
+          ${[['Chicken Biryani','10 kg','2h','3','active'],['Bread Loaves','15 pcs','5h','1','active'],['Mixed Rice','20 pcs','1h','0','expiring'],['Veg Curry','8 kg','4h','2','active']].map(([f,q,e,r,s]) => `
+          <tr><td style="font-weight:500;color:var(--text)">${f}</td><td>${q}</td>
+          <td style="color:${s==='expiring'?'var(--red)':'var(--text-2)'}">⏱ ${e}</td>
+          <td><span class="badge badge-${r>0?'blue':'gray'}">${r} req</span></td>
+          <td><span class="badge badge-${s==='active'?'green':'red'}">${s}</span></td>
+          <td><div style="display:flex;gap:4px;">
+            <button class="btn btn-sm" onclick="showToast('Editing ${f}')"><i class="ti ti-edit" style="font-size:12px"></i></button>
+            <button class="btn btn-sm btn-danger" onclick="showToast('${f} deleted','🗑️')"><i class="ti ti-trash" style="font-size:12px"></i></button>
+          </div></td></tr>`).join('')}
+        </tbody></table>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">Impact Summary</div></div>
+      <div class="card-body">
+        <div class="stat-row"><span class="stat-row-label">Meals Saved</span><span class="stat-row-val" style="color:var(--green-dark)">1,284</span></div>
+        <div class="stat-row"><span class="stat-row-label">People Fed</span><span class="stat-row-val" style="color:var(--green-dark)">~2,500</span></div>
+        <div class="stat-row"><span class="stat-row-label">CO₂ Reduced</span><span class="stat-row-val">64 kg</span></div>
+        <div class="stat-row"><span class="stat-row-label">Your Rating</span><span class="stat-row-val">⭐ 4.8/5</span></div>
+        <div class="stat-row"><span class="stat-row-label">Rank</span><span class="stat-row-val">#3 in City</span></div>
+        <div style="margin-top:16px;padding:12px;background:var(--green-light);border-radius:10px;text-align:center;">
+          <div style="font-size:12px;color:var(--green-dark);font-weight:500">🏆 Gold Donor Badge</div>
+          <div style="font-size:11px;color:var(--green-dark);margin-top:4px;opacity:0.8">Top 5% contributor</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header"><div class="card-title">Pending Requests</div><span class="badge badge-amber">3 new</span></div>
+    <div class="card-body" style="padding:0">
+      <table><thead><tr><th>Requester</th><th>Food Requested</th><th>Contact</th><th>Time</th><th>Actions</th></tr></thead>
+      <tbody>
+        ${[['Ravi Kumar','Chicken Biryani (5kg)','+91 98765 43210','10 min ago'],['NGO Hope','Bread Loaves (15 pcs)','+91 87654 32109','25 min ago'],['Priya Nair','Mixed Rice (10 pcs)','+91 76543 21098','1h ago']].map(([u,f,c,t]) => `
+        <tr><td><div class="avatar-row"><div class="avatar-sm" style="background:var(--green)">${u[0]}</div>${u}</div></td>
+        <td>${f}</td><td style="color:var(--blue);font-size:12px">${c}</td><td style="color:var(--text-3);font-size:11px">${t}</td>
+        <td><div style="display:flex;gap:4px;">
+          <button class="btn btn-sm" style="color:var(--green-dark);border-color:#A7F3D0;" onclick="showToast('Request from ${u} accepted ✅','✅')"><i class="ti ti-check" style="font-size:12px"></i> Accept</button>
+          <button class="btn btn-sm btn-danger" onclick="showToast('Request rejected','❌')"><i class="ti ti-x" style="font-size:12px"></i></button>
+          <button class="btn btn-sm" onclick="showToast('Chat opened with ${u} 💬','💬')"><i class="ti ti-message" style="font-size:12px"></i></button>
+        </div></td></tr>`).join('')}
+      </tbody></table>
+    </div>
+  </div>`;
+};
+
+/* ---- DONOR ADD FOOD ---- */
+PAGES['donor-add'] = (el) => {
+  el.innerHTML = `
+  <div style="max-width:700px;">
+    <div class="card">
+      <div class="card-header"><div class="card-title">Add New Food Listing</div><span class="badge badge-green">Active listing</span></div>
+      <div class="card-body">
+        <div class="form-grid">
+          <div class="form-group"><label class="form-label">Food Name *</label><input class="form-input" placeholder="e.g., Chicken Biryani" /></div>
+          <div class="form-group"><label class="form-label">Category *</label>
+            <select class="form-select"><option>Select category</option><option>Cooked Meals</option><option>Vegetables & Fruits</option><option>Bakery Items</option><option>Dairy Products</option><option>Sweets & Snacks</option><option>Raw Groceries</option></select>
+          </div>
+          <div class="form-group"><label class="form-label">Quantity *</label><input class="form-input" placeholder="e.g., 10 kg or 20 portions" /></div>
+          <div class="form-group"><label class="form-label">Available Until *</label><input class="form-input" type="datetime-local" /></div>
+          <div class="form-group"><label class="form-label">Contact Number *</label><input class="form-input" placeholder="+91 98765 43210" /></div>
+          <div class="form-group"><label class="form-label">Freshness Duration</label><input class="form-input" placeholder="e.g., 4 hours, 1 day" /></div>
+        </div>
+        <div class="form-group"><label class="form-label">Pickup Address *</label><textarea class="form-textarea" placeholder="Complete pickup address with landmark..."></textarea></div>
+        <div class="form-group"><label class="form-label">Special Instructions</label><textarea class="form-textarea" placeholder="Any dietary info, allergies, or pickup instructions..."></textarea></div>
+        <div class="form-group">
+          <label class="form-label">Food Image</label>
+          <div class="upload-area" onclick="showToast('Image selected 📸','📸')">
+            <div class="upload-icon"><i class="ti ti-photo-up" style="font-size:28px;color:var(--text-3)"></i></div>
+            <div class="upload-text"><span>Click to upload</span> or drag and drop</div>
+            <div style="font-size:11px;color:var(--text-3);margin-top:4px">PNG, JPG up to 5MB</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:8px;">
+          <button class="btn btn-green" onclick="showToast('Food listing published! 🎉','🎉')" style="flex:1;justify-content:center;"><i class="ti ti-check" style="font-size:14px"></i> Publish Listing</button>
+          <button class="btn" onclick="showToast('Saved as draft 📝','📝')"><i class="ti ti-file" style="font-size:14px"></i> Save Draft</button>
+        </div>
+      </div>
+    </div>
+  </div>`;
+};
+
+/* ---- USER HOME ---- */
+PAGES['user-home'] = (el) => {
+  el.innerHTML = `
+  <div class="hero">
+    <div class="hero-tag"><div class="hero-dot"></div> Live in 28 cities across India</div>
+    <h1>Save Food,<br><span>Feed People.</span></h1>
+    <p>Connect with donors near you and help reduce food waste while supporting communities in need. Every meal counts.</p>
+    <div class="hero-btns">
+      <button class="hero-btn hero-btn-primary" onclick="navigate('user-browse')"><i class="ti ti-search" style="font-size:14px"></i> Find Food Near Me</button>
+      <button class="hero-btn hero-btn-secondary" onclick="navigate('user-about')">Our Mission</button>
+    </div>
+    <div class="hero-stats">
+      <div class="hero-stat"><div class="hero-stat-val">89.4K</div><div class="hero-stat-label">Meals Saved</div></div>
+      <div class="hero-stat"><div class="hero-stat-val">2,847</div><div class="hero-stat-label">Active Donors</div></div>
+      <div class="hero-stat"><div class="hero-stat-val">47.2K</div><div class="hero-stat-label">People Fed</div></div>
+      <div class="hero-stat"><div class="hero-stat-val">12.4T</div><div class="hero-stat-label">Waste Reduced</div></div>
+    </div>
+  </div>
+
+  <div class="section-header">
+    <div><div class="section-title">Available Nearby</div><div class="section-sub">Food available for pickup in your area</div></div>
+    <button class="btn" onclick="navigate('user-browse')">Browse all <i class="ti ti-arrow-right" style="font-size:13px"></i></button>
+  </div>
+
+  <div class="food-grid" style="margin-bottom:24px;">
+    ${[
+      {emoji:'🍛',bg:'food-img-amber',name:'Chicken Biryani',donor:'Hotel Grand Palace',qty:'10 kg',dist:'0.8 km',time:'2h left'},
+      {emoji:'🍞',bg:'food-img-green',name:'Fresh Bread Loaves',donor:'Sunrise Bakery',qty:'30 pcs',dist:'1.2 km',time:'5h left'},
+      {emoji:'🥗',bg:'food-img-blue',name:'Fresh Salad Bowls',donor:'Cafe Verde',qty:'15 bowls',dist:'2.1 km',time:'3h left'},
+    ].map(f => `
+    <div class="food-card">
+      <div class="food-img ${f.bg}">${f.emoji}<span class="food-dist">📍 ${f.dist}</span></div>
+      <div class="food-info">
+        <div class="food-name">${f.name}</div>
+        <div class="food-donor"><i class="ti ti-building-store" style="font-size:11px;color:var(--text-3)"></i>${f.donor}</div>
+        <div class="food-meta"><span class="food-qty">${f.qty}</span><span class="food-time"><i class="ti ti-clock" style="font-size:11px"></i>${f.time}</span></div>
+        <button class="food-req-btn" onclick="showToast('Request sent! Donor will confirm soon 🎉','🎉')">Request Pickup</button>
+      </div>
+    </div>`).join('')}
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-header"><div class="card-title">NGO Partners</div><span class="badge badge-green">Active</span></div>
+      <div class="card-body">
+        ${[['NGO Hope Foundation','Vijayawada','Feeding 500+ daily'],['Annapoorna Trust','Guntur','Mid-day meals program'],['Food For All','Visakhapatnam','Street food distribution']].map(([n,c,d]) => `
+        <div class="donor-card">
+          <div class="avatar-sm" style="background:var(--green);width:36px;height:36px;font-size:13px;">${n[0]}</div>
+          <div class="donor-info"><div class="donor-name">${n}</div><div class="donor-type">${c} · ${d}</div></div>
+          <span class="badge badge-green" style="font-size:10px">Partner</span>
+        </div>`).join('')}
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">Success Stories</div></div>
+      <div class="card-body">
+        ${[
+          {icon:'ti-quote',bg:'var(--green-light)',c:'var(--green-dark)',title:'"Changed our community"',sub:'NGO Hope collected 500 meals this month through FoodShare'},
+          {icon:'ti-heart',bg:'var(--amber-light)',c:'var(--amber)',title:'"Zero waste achieved"',sub:'Hotel Grand donated 1,200 meals this year - all collected!'},
+          {icon:'ti-star',bg:'var(--blue-light)',c:'var(--blue)',title:'"Super easy to use"',sub:'Requesting food takes under 2 minutes. Amazing platform.'},
+        ].map(s => `
+        <div class="tl-item">
+          <div class="notif-icon" style="background:${s.bg};color:${s.c};border-radius:10px;min-width:36px;height:36px;"><i class="ti ${s.icon}" style="font-size:14px;"></i></div>
+          <div class="tl-content"><div class="tl-title">${s.title}</div><div class="tl-sub">${s.sub}</div></div>
+        </div>`).join('')}
+      </div>
+    </div>
+  </div>`;
+};
+
+/* ---- USER BROWSE ---- */
+PAGES['user-browse'] = (el) => {
+  el.innerHTML = `
+  <div class="card" style="margin-bottom:16px;">
+    <div class="card-body" style="padding:14px 20px;">
+      <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+        <div class="search-box" style="flex:1;min-width:200px;"><i class="ti ti-map-pin" style="font-size:14px;color:var(--green-dark)"></i><input placeholder="Your location..." style="border:none;background:transparent;outline:none;font-size:13px;flex:1;color:var(--text);" /></div>
+        <select class="form-select" style="width:auto;"><option>All Categories</option><option>Cooked Meals</option><option>Vegetables</option><option>Bakery</option><option>Dairy</option></select>
+        <select class="form-select" style="width:auto;"><option>Any Quantity</option><option>1-5 kg</option><option>5-10 kg</option><option>10+ kg</option></select>
+        <button class="btn btn-green" onclick="showToast('Search results updated')"><i class="ti ti-search" style="font-size:13px"></i> Search</button>
+      </div>
+    </div>
+  </div>
+  <div class="chip-row">
+    <button class="chip active">All</button>
+    <button class="chip">🍛 Cooked Meals</button>
+    <button class="chip">🥦 Vegetables</button>
+    <button class="chip">🍞 Bakery</button>
+    <button class="chip">🧀 Dairy</button>
+    <button class="chip">🍰 Sweets</button>
+    <button class="chip">📦 Groceries</button>
+  </div>
+  <div class="food-grid">
+    ${[
+      {emoji:'🍛',bg:'food-img-amber',name:'Chicken Biryani',donor:'Hotel Grand Palace',qty:'10 kg',dist:'0.8 km',time:'2h left',cat:'Cooked'},
+      {emoji:'🍞',bg:'food-img-green',name:'Fresh Bread Loaves',donor:'Sunrise Bakery',qty:'30 pcs',dist:'1.2 km',time:'5h left',cat:'Bakery'},
+      {emoji:'🥗',bg:'food-img-blue',name:'Fresh Salad Bowls',donor:'Cafe Verde',qty:'15 bowls',dist:'2.1 km',time:'3h left',cat:'Cooked'},
+      {emoji:'🥦',bg:'food-img-green',name:'Mixed Vegetables',donor:'Sunita Kitchen',qty:'5 kg',dist:'3.0 km',time:'4h left',cat:'Veg'},
+      {emoji:'🍰',bg:'food-img-amber',name:'Assorted Sweets',donor:'Function Hall',qty:'2 kg',dist:'1.5 km',time:'6h left',cat:'Sweets'},
+      {emoji:'🍚',bg:'food-img-blue',name:'Rice & Dal Packets',donor:'Community Kitchen',qty:'25 packs',dist:'0.5 km',time:'1h left',cat:'Cooked'},
+    ].map(f => `
+    <div class="food-card">
+      <div class="food-img ${f.bg}">${f.emoji}<span class="food-dist">📍 ${f.dist}</span></div>
+      <div class="food-info">
+        <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:4px;"><div class="food-name">${f.name}</div><span class="badge badge-gray" style="font-size:9px;">${f.cat}</span></div>
+        <div class="food-donor"><i class="ti ti-building-store" style="font-size:11px;"></i>${f.donor}</div>
+        <div class="food-meta"><span class="food-qty">${f.qty}</span><span class="food-time"><i class="ti ti-clock" style="font-size:11px"></i>${f.time}</span></div>
+        <button class="food-req-btn" onclick="showToast('Request sent! 🎉 Donor will confirm soon.','🎉')">Request Pickup</button>
+      </div>
+    </div>`).join('')}
+  </div>`;
+
+  el.querySelectorAll('.chip').forEach(c => c.onclick = function() {
+    el.querySelectorAll('.chip').forEach(x => x.classList.remove('active'));
+    this.classList.add('active');
+  });
+};
+
+/* ---- USER REQUESTS ---- */
+PAGES['user-requests'] = (el) => {
+  el.innerHTML = `
+  <div class="card" style="margin-bottom:20px;">
+    <div class="card-header"><div class="card-title">Track Request #R-1042</div><span class="badge badge-amber">In Progress</span></div>
+    <div class="card-body">
+      <div class="tracker">
+        <div class="tracker-step">
+          <div class="tracker-dot done"><i class="ti ti-check" style="font-size:13px"></i></div>
+          <div class="tracker-label">Requested</div>
+          <div class="tracker-line done"></div>
+        </div>
+        <div class="tracker-step">
+          <div class="tracker-dot done"><i class="ti ti-check" style="font-size:13px"></i></div>
+          <div class="tracker-label">Accepted</div>
+          <div class="tracker-line done"></div>
+        </div>
+        <div class="tracker-step">
+          <div class="tracker-dot current">🚗</div>
+          <div class="tracker-label">En Route</div>
+          <div class="tracker-line"></div>
+        </div>
+        <div class="tracker-step">
+          <div class="tracker-dot pending"><i class="ti ti-package" style="font-size:13px"></i></div>
+          <div class="tracker-label">Collected</div>
+        </div>
+      </div>
+      <div style="background:var(--green-light);border-radius:10px;padding:14px;margin-top:8px;display:flex;gap:12px;align-items:center;">
+        <div style="font-size:28px;">🍛</div>
+        <div><div style="font-size:13px;font-weight:500;color:var(--text)">Chicken Biryani (5 kg)</div><div style="font-size:12px;color:var(--green-dark);margin-top:2px">Hotel Grand Palace · 0.8 km away</div><div style="font-size:11px;color:var(--text-3);margin-top:4px">Pickup before 4:30 PM · Contact: +91 98765 43210</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><div class="card-title">All My Requests</div></div>
+    <div class="card-body" style="padding:0">
+      <table><thead><tr><th>ID</th><th>Food Item</th><th>Donor</th><th>Date</th><th>Status</th></tr></thead>
+      <tbody>
+        ${[
+          ['#R-1042','Chicken Biryani (5kg)','Hotel Grand','Today','approved'],
+          ['#R-1038','Bread Loaves (10 pcs)','Sunrise Bakery','Yesterday','completed'],
+          ['#R-1031','Mixed Vegetables (3kg)','Sunita Kitchen','3 days ago','completed'],
+          ['#R-1024','Sweets (1kg)','Function Hall','Last week','rejected'],
+          ['#R-1019','Rice Packets (15 pcs)','Community Kitchen','2 weeks ago','completed'],
+        ].map(([id,f,d,dt,s]) => `<tr>
+          <td style="font-weight:500;color:var(--text)">${id}</td><td>${f}</td><td style="color:var(--text-2)">${d}</td>
+          <td style="font-size:11px;color:var(--text-3)">${dt}</td>
+          <td><span class="badge badge-${s==='completed'?'green':s==='approved'?'blue':s==='rejected'?'red':'amber'}">${s}</span></td>
+        </tr>`).join('')}
+      </tbody></table>
+    </div>
+  </div>`;
+};
+
+/* ---- USER ABOUT ---- */
+PAGES['user-about'] = (el) => {
+  el.innerHTML = `
+  <div style="max-width:640px;margin:0 auto;">
+    <div style="text-align:center;padding:32px 0 24px;">
+      <div style="font-size:48px;margin-bottom:16px;">🌱</div>
+      <div style="font-size:26px;font-weight:500;margin-bottom:12px;">Our Mission</div>
+      <p style="font-size:14px;color:var(--text-2);line-height:1.8;">FoodShare exists to bridge the gap between food surplus and food scarcity — reducing waste while ensuring no community goes hungry. We connect donors directly with those who need it most, in real time.</p>
+    </div>
+    <div class="kpi-grid" style="grid-template-columns:repeat(2,1fr);margin-bottom:24px;">
+      <div class="kpi-card" style="text-align:center;"><div class="kpi-value" style="color:var(--green-dark);font-size:32px;">89.4K</div><div class="kpi-label" style="font-size:13px;">Meals Saved</div></div>
+      <div class="kpi-card" style="text-align:center;"><div class="kpi-value" style="color:var(--amber);font-size:32px;">47K+</div><div class="kpi-label" style="font-size:13px;">People Fed</div></div>
+      <div class="kpi-card" style="text-align:center;"><div class="kpi-value" style="color:var(--blue);font-size:32px;">2,847</div><div class="kpi-label" style="font-size:13px;">Donor Partners</div></div>
+      <div class="kpi-card" style="text-align:center;"><div class="kpi-value" style="color:var(--red);font-size:32px;">28</div><div class="kpi-label" style="font-size:13px;">Cities Active</div></div>
+    </div>
+    <div class="card" style="margin-bottom:16px;">
+      <div class="card-header"><div class="card-title">How It Works</div></div>
+      <div class="card-body">
+        ${[
+          {icon:'ti-building-store',label:'Donors List Food',desc:'Restaurants, hotels, and households list surplus food with quantity, location, and pickup time.'},
+          {icon:'ti-search',label:'Users Discover',desc:'Community members and NGOs browse nearby listings and send pickup requests in seconds.'},
+          {icon:'ti-truck-delivery',label:'Pickup & Collect',desc:'Approved requests are collected — food reaches those who need it, waste is eliminated.'},
+        ].map((s,i) => `
+        <div style="display:flex;gap:14px;padding:12px 0;border-bottom:0.5px solid var(--border)${i===2?';border:none':''}">;
+          <div style="width:40px;height:40px;border-radius:10px;background:var(--green-light);display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="ti ${s.icon}" style="font-size:18px;color:var(--green-dark)"></i></div>
+          <div><div style="font-size:14px;font-weight:500;margin-bottom:4px;">${s.label}</div><div style="font-size:13px;color:var(--text-2);line-height:1.6">${s.desc}</div></div>
+        </div>`).join('')}
+      </div>
+    </div>
+  </div>`;
+};
+
+/* ---- USER CONTACT ---- */
+PAGES['user-contact'] = (el) => {
+  el.innerHTML = `
+  <div style="max-width:560px;margin:0 auto;">
+    <div class="card">
+      <div class="card-header"><div class="card-title">Get in Touch</div><span class="badge badge-green">We respond in 24h</span></div>
+      <div class="card-body">
+        <div class="form-grid">
+          <div class="form-group"><label class="form-label">Your Name *</label><input class="form-input" placeholder="Full name"></div>
+          <div class="form-group"><label class="form-label">Email *</label><input class="form-input" type="email" placeholder="your@email.com"></div>
+        </div>
+        <div class="form-group"><label class="form-label">Subject *</label>
+          <select class="form-select"><option>Select subject</option><option>General Enquiry</option><option>Partnership / NGO</option><option>Donor Onboarding</option><option>Technical Support</option><option>Report an Issue</option></select>
+        </div>
+        <div class="form-group"><label class="form-label">Message *</label><textarea class="form-textarea" style="min-height:120px;" placeholder="Tell us how we can help..."></textarea></div>
+        <button class="btn btn-green" style="width:100%;justify-content:center;" onclick="showToast('Message sent! We\'ll get back to you soon 💌','💌')"><i class="ti ti-send" style="font-size:14px"></i> Send Message</button>
+      </div>
+    </div>
+    <div class="grid-2" style="margin-top:16px;">
+      <div class="card"><div class="card-body" style="text-align:center;padding:20px;">
+        <i class="ti ti-mail" style="font-size:24px;color:var(--green-dark);"></i>
+        <div style="font-size:13px;font-weight:500;margin-top:8px;">Email</div>
+        <div style="font-size:12px;color:var(--text-2);margin-top:4px">hello@foodshare.in</div>
+      </div></div>
+      <div class="card"><div class="card-body" style="text-align:center;padding:20px;">
+        <i class="ti ti-phone" style="font-size:24px;color:var(--blue);"></i>
+        <div style="font-size:13px;font-weight:500;margin-top:8px;">Helpline</div>
+        <div style="font-size:12px;color:var(--text-2);margin-top:4px">1800-123-FOOD</div>
+      </div></div>
+    </div>
+  </div>`;
+};
+
+/* ---- DONOR PROFILE ---- */
+PAGES['donor-profile'] = (el) => {
+  el.innerHTML = `
+  <div style="max-width:560px;">
+    <div class="card" style="margin-bottom:16px;">
+      <div class="card-body" style="display:flex;gap:16px;align-items:center;">
+        <div style="width:64px;height:64px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:500;color:white;flex-shrink:0;">HG</div>
+        <div><div style="font-size:16px;font-weight:500;">Hotel Grand Palace</div><div style="font-size:13px;color:var(--text-2);margin-top:2px;">Restaurant · Vijayawada</div><div style="display:flex;align-items:center;gap:6px;margin-top:6px;"><span class="badge badge-green">Gold Donor</span><div class="star-row"><i class="ti ti-star-filled" style="font-size:12px;color:var(--amber)"></i><span style="font-size:12px;font-weight:500"> 4.8/5</span></div></div></div>
+        <button class="btn btn-sm" style="margin-left:auto;" onclick="showToast('Profile photo updated 📸','📸')"><i class="ti ti-camera" style="font-size:12px"></i></button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">Update Profile</div></div>
+      <div class="card-body">
+        <div class="form-grid">
+          <div class="form-group"><label class="form-label">Business Name</label><input class="form-input" value="Hotel Grand Palace"></div>
+          <div class="form-group"><label class="form-label">Type</label><select class="form-select"><option selected>Hotel</option><option>Restaurant</option><option>Function Hall</option><option>Household</option></select></div>
+          <div class="form-group"><label class="form-label">Email</label><input class="form-input" value="grand@palace.in" type="email"></div>
+          <div class="form-group"><label class="form-label">Phone</label><input class="form-input" value="+91 98765 43210"></div>
+        </div>
+        <div class="form-group"><label class="form-label">Address</label><textarea class="form-textarea">12, MG Road, Near Clock Tower, Vijayawada - 520001</textarea></div>
+        <div style="border-top:0.5px solid var(--border);padding-top:16px;margin-top:4px;">
+          <div style="font-size:13px;font-weight:500;margin-bottom:12px;">Change Password</div>
+          <div class="form-grid">
+            <div class="form-group"><label class="form-label">Current Password</label><input class="form-input" type="password" placeholder="••••••••"></div>
+            <div class="form-group"><label class="form-label">New Password</label><input class="form-input" type="password" placeholder="••••••••"></div>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;">
+          <button class="btn btn-green" onclick="showToast('Profile updated successfully ✅','✅')"><i class="ti ti-check" style="font-size:13px"></i> Save Changes</button>
+          <button class="btn" onclick="showToast('Changes discarded')">Discard</button>
+        </div>
+      </div>
+    </div>
+  </div>`;
+};
+
+/* ---- ADMIN SETTINGS ---- */
+PAGES['admin-settings'] = (el) => {
+  el.innerHTML = `
+  <div style="max-width:600px;">
+    <div class="card">
+      <div class="card-header"><div class="card-title">System Settings</div></div>
+      <div class="card-body">
+        ${[
+          ['Email Notifications','Send alerts for new requests and donations','on'],
+          ['Auto-expire Listings','Automatically remove listings after freshness window','on'],
+          ['NGO Priority Queue','Give NGO requests higher priority','off'],
+          ['SMS Alerts','Send SMS to donors when pickup confirmed','on'],
+          ['Public Donor Profiles','Allow users to see donor rating and history','on'],
+        ].map(([t,d,state]) => `
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:0.5px solid var(--border);">
+          <div><div style="font-size:13px;font-weight:500;">${t}</div><div style="font-size:11px;color:var(--text-3);margin-top:2px;">${d}</div></div>
+          <div onclick="this.dataset.on=this.dataset.on==='1'?'0':'1';this.style.background=this.dataset.on==='1'?'var(--green)':'var(--bg)';this.querySelector('span').style.transform=this.dataset.on==='1'?'translateX(18px)':'translateX(2px)';" 
+               data-on="${state==='on'?'1':'0'}"
+               style="width:40px;height:22px;border-radius:11px;background:${state==='on'?'var(--green)':'var(--bg)'};border:0.5px solid var(--border-2);cursor:pointer;position:relative;transition:background 0.15s;flex-shrink:0;">
+            <span style="position:absolute;top:2px;width:18px;height:18px;background:white;border-radius:50%;box-shadow:0 1px 3px rgba(0,0,0,0.2);transition:transform 0.15s;transform:translateX(${state==='on'?'18px':'2px'});"></span>
+          </div>
+        </div>`).join('')}
+        <div style="margin-top:16px;"><button class="btn btn-green" onclick="showToast('Settings saved ✅','✅')"><i class="ti ti-check" style="font-size:13px"></i> Save Settings</button></div>
+      </div>
+    </div>
+  </div>`;
+};
+
+/* ---- USER HISTORY ---- */
+PAGES['user-history'] = (el) => {
+  PAGES['user-requests'](el);
+};
+
+/* ---- DONOR MANAGE ---- */
+PAGES['donor-manage'] = (el) => {
+  PAGES['donor-dashboard'](el);
+};
+
+/* ---- DONOR REQUESTS (INCOMING) ---- */
+PAGES['donor-requests'] = (el) => {
+  el.innerHTML = `
+  <div class="card">
+    <div class="card-header"><div class="card-title">Incoming Requests</div><span class="badge badge-amber">3 new</span></div>
+    <div class="card-body" style="padding:0">
+      <table><thead><tr><th>Search ID</th><th>Requester</th><th>Item</th><th>Contact</th><th>Time</th><th>Actions</th></tr></thead>
+      <tbody>
+        ${[
+          ['#R-1042','Ravi Kumar','Chicken Biryani (5kg)','+91 98765 43210','10 min ago','pending'],
+          ['#R-1041','NGO Hope','Bread Loaves (15 pcs)','+91 87654 32109','25 min ago','pending'],
+          ['#R-1040','Priya Nair','Rice & Dal (3kg)','+91 76543 21098','1h ago','pending'],
+        ].map(([id,u,f,c,t,s]) => `<tr>
+          <td style="font-weight:500;color:var(--text)">${id}</td>
+          <td><div class="avatar-row"><div class="avatar-sm" style="background:var(--green)">${u[0]}</div>${u}</div></td>
+          <td>${f}</td><td style="color:var(--blue);font-size:12px">${c}</td>
+          <td style="color:var(--text-3);font-size:11px">${t}</td>
+          <td><div style="display:flex;gap:4px;">
+            <button class="btn btn-sm" style="color:var(--green-dark);border-color:#A7F3D0;" onclick="showToast('${id} accepted ✅','✅')"><i class="ti ti-check" style="font-size:12px"></i> Accept</button>
+            <button class="btn btn-sm btn-danger" onclick="showToast('${id} rejected','❌')"><i class="ti ti-x" style="font-size:12px"></i></button>
+            <button class="btn btn-sm" onclick="showToast('Chat opened 💬','💬')"><i class="ti ti-message" style="font-size:12px"></i></button>
+          </div></td>
+        </tr>`).join('')}
+      </tbody></table>
+    </div>
+  </div>`;
+};
+
+buildNav('admin');
+navigate('admin-dashboard');
+</script>
